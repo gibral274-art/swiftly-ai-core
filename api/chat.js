@@ -1,4 +1,4 @@
-const OpenAI = require('openai');
+const OpenAI = require('openai'); // Pastikan huruf 'c' kecil!
 
 // Mengambil API Key dari Environment Variable Vercel
 const openai = new OpenAI({
@@ -12,8 +12,16 @@ module.exports = async function (req, res) {
   }
 
   try {
-    // Menangkap riwayat obrolan yang dikirim oleh Vapi
-    const userMessages = req.body.messages || [];
+    // Menangkap riwayat obrolan yang dikirim oleh Vapi. 
+    // Kita pastikan formatnya benar-benar sebuah Array.
+    const rawMessages = Array.isArray(req.body.messages) ? req.body.messages : [];
+
+    // --- INI PENYARINGNYA (Mencegah Error OpenAI) ---
+    // Kita bersihkan data dari Vapi supaya OpenAI tidak marah.
+    const safeUserMessages = rawMessages.map(msg => ({
+      role: msg.role || 'user',
+      content: msg.content || ''
+    }));
 
     // INI ADALAH OTAK SWIFTLY AI (System Prompt)
     const systemPrompt = {
@@ -28,14 +36,14 @@ module.exports = async function (req, res) {
       5. Handling the Unknown: If asked something completely unrelated to sales or scheduling, politely steer the conversation back to the business offerings.`
     };
 
-    // Menggabungkan instruksi utama dengan pesan pelanggan
-    const messages = [systemPrompt, ...userMessages];
+    // Menggabungkan instruksi utama dengan pesan yang sudah bersih
+    const messages = [systemPrompt, ...safeUserMessages];
 
-    // Meminta OpenAI untuk merespon berdasarkan prompt dan riwayat chat
+    // Meminta OpenAI untuk merespon
     const response = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo', // Bisa diganti ke 'gpt-4o' nanti jika butuh yang lebih pintar
+      model: 'gpt-3.5-turbo', 
       messages: messages,
-      temperature: 0.7, // Tingkat kreativitas bot (0.7 cukup natural untuk jualan)
+      temperature: 0.7, 
     });
 
     // Mengirimkan jawaban balik ke Vapi
@@ -43,6 +51,7 @@ module.exports = async function (req, res) {
 
   } catch (error) {
     console.error('Error:', error);
-    res.status(500).json({ error: 'Terjadi kesalahan pada mesin Swiftly AI' });
+    // Kita tambahkan error.message agar kalau gagal lagi, penyebabnya lebih jelas
+    res.status(500).json({ error: 'Terjadi kesalahan pada mesin Swiftly AI', details: error.message });
   }
 };
