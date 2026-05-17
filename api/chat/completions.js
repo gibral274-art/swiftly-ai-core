@@ -45,9 +45,23 @@ module.exports = async function (req, res) {
       messages: messages,
       temperature: 0.7, 
     });
+// Menangkap teks jawaban dari OpenAI
+const aiMessageContent = response.choices[0].message.content || "Maaf, saya tidak bisa merespons saat ini.";
 
-    // Mengirimkan jawaban balik ke Vapi
-    res.status(200).json(response);
+// --- ALAT SADAP ---
+console.log("Jawaban Swiftly AI:", aiMessageContent);
+
+// Mengirimkan jawaban balik ke Vapi DENGAN FORMAT YANG BENAR
+res.status(200).json({
+  choices: [
+    {
+      message: {
+        role: "assistant",
+        content: aiMessageContent
+      }
+    }
+  ]
+});
 
   } catch (error) {
     console.error('Error:', error);
