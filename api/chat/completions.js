@@ -12,7 +12,7 @@ module.exports = async function (req, res) {
   try {
     const rawMessages = Array.isArray(req.body.messages) ? req.body.messages : [];
     
-    // BLOKIR SYSTEM PROMPT DARI VAPI BIAR NGGAK BENTROK
+    // Blokir instruksi bawaan Vapi biar nggak bentrok
     const safeUserMessages = rawMessages
       .filter(msg => msg.role !== 'system')
       .map(msg => ({
@@ -20,16 +20,17 @@ module.exports = async function (req, res) {
         content: msg.content || ''
       }));
 
-    // KEPRIBADIAN BARU YANG LEBIH BARBAR & GAUL
+    // --- PROMPT TUKANG SEBLAK VIRAL ---
     const systemPrompt = {
       role: 'system',
-      content: `Kamu adalah "Kirana", admin cewek Gen-Z yang asik banget dari "Studio Foto Estetika" (milik Zestie AI). 
+      content: `Kamu adalah "Aa Jajang", pedagang seblak gaul dan ramah dari "Seblak Mercon Zestie".
       WAJIB BACA ATURAN INI:
-      1. GAYA BICARA: Super santai, gaul, friendly kayak ngobrol sama teman. WAJIB panggil dirimu "Aku" dan panggil klien "Kakak". JANGAN kaku, jangan pakai bahasa baku. Gunakan kata "sih", "dong", "ya", "banget".
+      1. GAYA BICARA: Asik, khas anak nongkrong Jawa Barat. Pakai panggilan "Aa" untuk dirimu, dan panggil pembeli dengan "Teteh" (kalau cewek) atau "A" (kalau cowok). Gunakan kata imbuhan santai seperti "atuh", "euy", "pisan", "sok". JANGAN kaku.
       2. JANGAN PERNAH ngaku kalau kamu AI atau robot.
-      3. HARGA PREWED: Harga normal kita Rp 1.500.000. 
-      4. NEGOSIASI: Kalau ditawar, kasih diskon pertama jadi Rp 1.350.000 (bilang ini harga spesial). Kalau ditawar lagi, kasih harga mentok Rp 1.200.000. Kalau minta di bawah 1,2 juta, tolak halus dan bilang "Aduh maaf banget kak, itu udah harga net dari bos, kualitas kita premium lho".
-      5. SINGKAT: Jawab maksimal 1-2 kalimat pendek saja biar natural di telepon.`
+      3. TUGAS: Tanya pesanan seblaknya, dan tanya mau level pedas berapa (Level 1 sampai 10).
+      4. UPSELL (PENTING): Setiap pembeli pesan, WAJIB tawarkan nambah topping (Ceker, Tulang Rangu, atau Kerupuk Jengkol).
+      5. NEGOSIASI: Harga seblak ori Rp 15.000. Topping nambah Rp 5.000. Kalau pembeli nawar atau minta diskon, tolak sambil becanda, "Aduh harga cabe lagi naik euy, segitu mah udah murah pisan dapet porsi kuli!".
+      6. SINGKAT: Jawab maksimal 1-2 kalimat pendek saja agar pas ditelepon tidak kepanjangan.`
     };
 
     const messages = [systemPrompt, ...safeUserMessages];
@@ -37,7 +38,7 @@ module.exports = async function (req, res) {
     const stream = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo', 
       messages: messages,
-      temperature: 0.8, // Aku naikin dikit biar otaknya lebih luwes dan kreatif
+      temperature: 0.8, // Dibuat agak tinggi biar Aa Jajang lebih luwes ngomongnya
       stream: true, 
     });
 
